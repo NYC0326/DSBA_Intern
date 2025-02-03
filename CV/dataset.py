@@ -1,91 +1,74 @@
-from models import ResNet50, ViT_S16
-from dataset import DatasetLoader
-from train import train
-from evaluate import evaluate
-from config import cfg
-import torch.nn as nn
-import torch.optim as optim
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, TensorDataset
 import torchvision.transforms as transforms
+from PIL import Image
 
-def get_augmentation(aug_name):
-    if aug_name == "GaussianBlur":
-        return transforms.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0))
-    elif aug_name == "ColorJitter":
-        return transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2)
-    else:
-        return None
 
-def run_experiment(model_type, pretrained, augmentation=None):
-    print(f"\nRunning experiment: {model_type} | Pretrained: {pretrained} | Augmentation: {augmentation}")
+class DatasetLoader:
+    def __init__(self, data_dir, batch_size, num_workers):
+        self.data_dir = data_dir
+        self.batch_size = batch_size
+        self.num_workers = num_workers
 
-    transform = get_augmentation(augmentation)
-    train_loader, val_loader = DatasetLoader(cfg.DATA_DIR, cfg.BATCH_SIZE, cfg.NUM_WORKERS).get_loaders(transform)
+        self.mean = np.array([0.485, 0.456, 0.406])
+        self.std = np.array([0.229, 0.224, 0.225])
 
-    if model_type == "ResNet50":
-        model = ResNet50(num_classes=cfg.NUM_CLASSES, pretrained=pretrained)
-    elif model_type == "ViT-S/16":
-        model = ViT_S16(num_classes=cfg.NUM_CLASSES, pretrained=pretrained)
-    else:
-        raise ValueError("Invalid model type")
+    def load_data(self, file_name):
+        data = np.load(os.path.join(self.data_dir, file_name))
 
-    epochs = 20
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=cfg.LEARNING_RATE, weight_decay=cfg.WEIGHT_DECAY)
+        if data.ndim == 4 and data.shape[-1] == 3:
+            data = np.transpose(data, (0, 3, 1, 2))
 
-    print(f"Starting training for {model_type} | Pretrained: {pretrained} | Augmentation: {augmentation}")
-    train(model, train_loader, criterion, optimizer, cfg.DEVICE, epochs, model_type, pretrained, augmentation)
-    print(f"Training complete for {model_type} | Pretrained: {pretrained} | Augmentation: {augmentation}. Starting evaluation...")
+        data = data / 255.0
+        data = (data - self.mean[:, None, None]) / self.std[:, None, None]
 
-    accuracy, avg_loss = evaluate(model, val_loader, criterion, cfg.DEVICE)
-    print(f"Evaluation complete for {model_type} | Pretrained: {pretrained} | Augmentation: {augmentation}")
+        return data
 
-    aug_folder = augmentation if augmentation else "None"
-    model_log_dir = os.path.join(cfg.LOG_DIR, model_type, str(pretrained), aug_folder)
-    os.makedirs(model_log_dir, exist_ok=True)
+    def get_loaders(self, augmentation=None):
+        train_data = self.load_data('train_data.npy')
+        train_target = np.load(os.path.join(self.data_dir, 'train_target.npy'))
+        test_data = self.load_data('test_data.npy')
+        test_target = np.load(os.path.join(self.data_dir, 'test_target.npy'))
 
-    result_file = os.path.join(model_log_dir, "training_results.csv")
-    pd.DataFrame([[model_type, pretrained, augmentation, accuracy, avg_loss]], 
-                 columns=["Model", "Pretrained", "Augmentation", "Accuracy (%)", "Loss"]).to_csv(result_file, index=False)
-    
-    return model_type, pretrained, augmentation, accuracy, avg_loss
+        print(f"Train Data Shape: {train_data.shape}")
+        print(f"Test Data Shape: {test_data.shape}")
 
-def save_results(results):
-    df = pd.DataFrame(results, columns=["Model", "Pretrained", "Augmentation", "Accuracy (%)", "Loss"])
-    df.to_csv(os.path.join(cfg.LOG_DIR, "experiment_results.csv"), index=False)
-    print("Overall results saved to experiment_results.csv")
+        transform_list = []
+        
+        if augmentation == "GaussianBlur":
+            transform_list.append(transforms.GaussianBlur(kernel_size=3))
+        elif augmentation == "RandomErasing":
+            transform_list.append(transforms.RandomErasing(p=0.7, scale=(0.05, 0.15), ratio=(0.3, 3.3), value=0))
 
-    plt.figure(figsize=(10,6))
-    df.pivot(index="Model", columns=["Pretrained", "Augmentation"], values="Accuracy (%)").plot(kind="bar")
-    plt.title("Model Accuracy Comparison with Augmentations")
-    plt.ylabel("Accuracy (%)")
-    plt.xticks(rotation=45, ha="right")
-    plt.legend(title="Pretrained | Augmentation")
-    plt.savefig(os.path.join(cfg.LOG_DIR, "model_comparison.png"))
-    print("Saved model comparison chart.")
+        transform = transforms.Compose(transform_list)
 
-if __name__ == "__main__":
-    results = []
-    
-    experiments = [
-        ("ResNet50", False, None),
-        ("ResNet50", False, "GaussianBlur"),
-        ("ResNet50", True, None),
-        ("ResNet50", True, "GaussianBlur"),
-        ("ViT-S/16", False, None),
-        ("ViT-S/16", False, "GaussianBlur"),
-        ("ViT-S/16", True, None),
-        ("ViT-S/16", True, "GaussianBlur"),
-        ("ResNet50", False, "RandomErasing"),
-        ("ResNet50", True, "RandomErasing"),
-        ("ViT-S/16", False, "RandomErasing"),
-        ("ViT-S/16", True, "RandomErasing"),
-    ]
+        class CustomDataset(torch.utils.data.Dataset):
+            def __init__(self, data, targets, transform=None):
+                self.data = data
+                self.targets = targets
+                self.transform = transform
 
-    for model_type, pretrained, augmentation in experiments:
-        results.append(run_experiment(model_type, pretrained, augmentation))
-        print('for loop end')
+            def __len__(self):
+                return len(self.data)
 
-    save_results(results)
+            def __getitem__(self, idx):
+                img, label = self.data[idx], self.targets[idx]
+                img = np.transpose(img, (1, 2, 0))
+                img = (img * 255).astype(np.uint8)
+                img = Image.fromarray(img)
+
+                if self.transform:
+                    img = self.transform(img)
+
+                img = transforms.ToTensor()(img)
+                return img, torch.tensor(label, dtype=torch.long)
+
+        train_dataset = CustomDataset(train_data, train_target, transform)
+        test_dataset = CustomDataset(test_data, test_target, transform)
+
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
+        test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
+
+        return train_loader, test_loader

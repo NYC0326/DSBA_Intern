@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from models import ResNet50, ViT_S16
+from models.resnet50 import ResNet50
+from models.vit_s16 import ViT_S16
 from dataset import DatasetLoader
 from config import cfg
 

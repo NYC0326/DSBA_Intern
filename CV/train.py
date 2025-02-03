@@ -1,21 +1,19 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from models import ResNet50, ViT_S16
+from models.resnet50 import ResNet50
+from models.vit_s16 import ViT_S16
 from dataset import DatasetLoader
 from config import cfg
 from tqdm import tqdm
 import os
 import json
 
-def train(model, train_loader, criterion, optimizer, device, epochs, model_name, pretrained, augmentation):
-    log_dir = os.path.join(cfg.LOG_DIR, model_name, str(pretrained), augmentation if augmentation else "None")
-    os.makedirs(log_dir, exist_ok=True)
-    
-    log_file = os.path.join(log_dir, "training_log.json")
+def train(model, train_loader, criterion, optimizer, device, epochs, save_dir, model_type, pretrained, augmentation):
+    log_file = os.path.join(save_dir, "training_log.json")
     log_data = []
 
-    print(f"\nTraining {model_name} | Pretrained: {pretrained} | Augmentation: {augmentation} | Epochs: {epochs}")
+    print(f"\nTraining {model_type} | Pretrained: {'w' if pretrained else 'wo'} pretrain | Augmentation: {augmentation or 'None'} | Epochs: {epochs}")
 
     model.to(device)
     model.train()
@@ -25,7 +23,9 @@ def train(model, train_loader, criterion, optimizer, device, epochs, model_name,
         correct = 0
         total = 0
         
-        progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch+1}/{epochs} | Aug: {augmentation}")
+        progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), 
+                          desc=f"Epoch {epoch+1}/{epochs} | Aug: {augmentation or 'None'}")
+        
         for batch_idx, (images, labels) in progress_bar:
             images, labels = images.to(device), labels.to(device)
             
@@ -40,21 +40,24 @@ def train(model, train_loader, criterion, optimizer, device, epochs, model_name,
             correct += (predicted == labels).sum().item()
             total += labels.size(0)
             
-            progress_bar.set_postfix(loss=loss.item(), acc=100 * correct / total)
+            avg_loss = running_loss / (batch_idx + 1)
+            accuracy = 100. * correct / total
+            progress_bar.set_postfix({
+                'Loss': f'{avg_loss:.3f}',
+                'Acc': f'{accuracy:.2f}%'
+            })
         
-        avg_loss = running_loss / len(train_loader)
-        accuracy = 100 * correct / total
-        print(f"Epoch [{epoch+1}/{epochs}] Completed | Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}% | Aug: {augmentation}")
+        epoch_data = {
+            'epoch': epoch + 1,
+            'loss': avg_loss,
+            'accuracy': accuracy
+        }
+        log_data.append(epoch_data)
         
-        log_data.append({
-            "epoch": epoch+1, 
-            "loss": avg_loss, 
-            "accuracy": accuracy
-        })
-        with open(log_file, "w") as f:
+        with open(log_file, 'w') as f:
             json.dump(log_data, f, indent=4)
-
-    print(f"\nTraining Completed for {model_name} | Pretrained: {pretrained} | Augmentation: {augmentation}. Log saved to {log_file}")
+            
+    return log_data
 
 if __name__ == "__main__":
     augmentation = cfg.AUGMENTATION
@@ -73,4 +76,7 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=cfg.LEARNING_RATE, weight_decay=cfg.WEIGHT_DECAY)
 
-    train(model, train_loader, criterion, optimizer, cfg.DEVICE, epochs, cfg.MODEL_TYPE, cfg.PRETRAINED, augmentation)
+    save_dir = os.path.join(cfg.LOG_DIR, cfg.MODEL_TYPE, str(cfg.PRETRAINED), augmentation if augmentation else "None")
+    os.makedirs(save_dir, exist_ok=True)
+
+    train(model, train_loader, criterion, optimizer, cfg.DEVICE, epochs, save_dir, cfg.MODEL_TYPE, cfg.PRETRAINED, augmentation)
