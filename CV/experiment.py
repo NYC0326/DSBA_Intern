@@ -70,13 +70,13 @@ if __name__ == "__main__":
     results = []
     
     experiments = [
-        #("ResNet50", False, None),
+        ("ResNet50", False, None),
         ("ResNet50", False, "GaussianBlur"),
-        #("ResNet50", True, None),
+        ("ResNet50", True, None),
         ("ResNet50", True, "GaussianBlur"),
-        #("ViT-S/16", False, None),
+        ("ViT-S/16", False, None),
         ("ViT-S/16", False, "GaussianBlur"),
-        #("ViT-S/16", True, None),
+        ("ViT-S/16", True, None),
         ("ViT-S/16", True, "GaussianBlur"),
     ]
 
