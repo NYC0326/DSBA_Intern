@@ -1,0 +1,2 @@
+Model,Pretrained,Accuracy (%),Loss
+ResNet50,True,70.78,1.1580137250522455

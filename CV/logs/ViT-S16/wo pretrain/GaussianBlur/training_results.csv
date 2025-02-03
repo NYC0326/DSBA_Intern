@@ -1,0 +1,2 @@
+Model,Pretrained,Augmentation,Accuracy (%),Loss
+ViT-S/16,False,GaussianBlur,10.0,2.6008267097960647
