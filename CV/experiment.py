@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 import pandas as pd
+import torch.optim.lr_scheduler as lr_scheduler
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 
@@ -19,12 +20,12 @@ def get_augmentation(aug_name):
     return None
 
 def run_experiment(model_type, pretrained, augmentation=None):
-    pretrain_folder = "w pretrain" if pretrained else "wo pretrain"
+    save_folder = "w pretrain" if pretrained else "wo pretrain"
     aug_folder = augmentation if augmentation else "None"
-    save_dir = os.path.join(cfg.LOG_DIR, model_type, pretrain_folder, aug_folder)
+    save_dir = os.path.join(cfg.LOG_DIR, model_type, save_folder, aug_folder)
     os.makedirs(save_dir, exist_ok=True)
 
-    print(f"\nRunning experiment: Model={model_type}, Pretrained={pretrain_folder}, Augmentation={aug_folder}")
+    print(f"\nRunning experiment: Model={model_type}, Pretrained={save_folder}, Augmentation={aug_folder}")
 
     transform = get_augmentation(augmentation)
     train_loader, val_loader = DatasetLoader(
@@ -36,17 +37,24 @@ def run_experiment(model_type, pretrained, augmentation=None):
     # Initialize model
     if model_type == "ResNet50":
         model = ResNet50(num_classes=cfg.NUM_CLASSES, pretrained=pretrained)
-    elif model_type == "ViT-S/16":
+    elif model_type == "ViT-S16":
         model = ViT_S16(num_classes=cfg.NUM_CLASSES, pretrained=pretrained)
     else:
         raise ValueError(f"Invalid model type: {model_type}")
 
-    epochs = 30
+    epochs = 20
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(
+    optimizer = optim.AdamW(
         model.parameters(),
         lr=cfg.LEARNING_RATE,
-        weight_decay=cfg.WEIGHT_DECAY
+        weight_decay=cfg.WEIGHT_DECAY,
+        betas=(0.9, 0.999)
+    )
+    
+    scheduler = lr_scheduler.CosineAnnealingLR(
+        optimizer, 
+        T_max=cfg.EPOCHS,
+        eta_min=1e-6
     )
 
     train(model, train_loader, criterion, optimizer, cfg.DEVICE, 
@@ -80,12 +88,12 @@ if __name__ == "__main__":
         ("ResNet50", True, "RandomErasing"),
         
         # ViT-S/16 experiments
-        ("ViT-S/16", False, None),
-        ("ViT-S/16", False, "GaussianBlur"),
-        ("ViT-S/16", False, "RandomErasing"),
-        ("ViT-S/16", True, None),
-        ("ViT-S/16", True, "GaussianBlur"),
-        ("ViT-S/16", True, "RandomErasing"),
+        ("ViT-S16", False, None),
+        ("ViT-S16", False, "GaussianBlur"),
+        ("ViT-S16", False, "RandomErasing"),
+        ("ViT-S16", True, None),
+        ("ViT-S16", True, "GaussianBlur"),
+        ("ViT-S16", True, "RandomErasing"),
     ]
 
     results = []

@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.optim as optim
 from models.resnet50 import ResNet50
@@ -8,49 +7,55 @@ from config import cfg
 from tqdm import tqdm
 import os
 import json
+import torch.cuda.amp as amp
 
 def train(model, train_loader, criterion, optimizer, device, epochs, save_dir, model_type, pretrained, augmentation):
+    scaler = amp.GradScaler()
     log_file = os.path.join(save_dir, "training_log.json")
     log_data = []
+    
+    print(f"\nTraining {model_type} | Pretrained: {'w' if pretrained else 'wo'} pretrain | "
+          f"Augmentation: {augmentation or 'None'} | Epochs: {epochs}")
 
-    print(f"\nTraining {model_type} | Pretrained: {'w' if pretrained else 'wo'} pretrain | Augmentation: {augmentation or 'None'} | Epochs: {epochs}")
-
-    model.to(device)
-    model.train()
-
+    model = model.to(device)
+    best_acc = 0.0
+    
     for epoch in range(epochs):
+        model.train()
         running_loss = 0.0
         correct = 0
         total = 0
         
-        progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), 
-                          desc=f"Epoch {epoch+1}/{epochs} | Aug: {augmentation or 'None'}")
+        progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}")
         
-        for batch_idx, (images, labels) in progress_bar:
+        for images, labels in progress_bar:
             images, labels = images.to(device), labels.to(device)
             
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            
+            with amp.autocast():
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+            
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             
             running_loss += loss.item()
-            _, predicted = torch.max(outputs, 1)
-            correct += (predicted == labels).sum().item()
+            _, predicted = outputs.max(1)
             total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
             
-            avg_loss = running_loss / (batch_idx + 1)
-            accuracy = 100. * correct / total
+            acc = 100. * correct / total
             progress_bar.set_postfix({
-                'Loss': f'{avg_loss:.3f}',
-                'Acc': f'{accuracy:.2f}%'
+                'Loss': f'{running_loss/len(train_loader):.3f}',
+                'Acc': f'{acc:.2f}%'
             })
-        
+
         epoch_data = {
             'epoch': epoch + 1,
-            'loss': avg_loss,
-            'accuracy': accuracy
+            'loss': running_loss / len(train_loader),
+            'accuracy': acc
         }
         log_data.append(epoch_data)
         

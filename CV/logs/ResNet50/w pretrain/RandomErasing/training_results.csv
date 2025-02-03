@@ -1,0 +1,2 @@
+Model,Pretrained,Augmentation,Accuracy (%),Loss
+ResNet50,True,RandomErasing,71.06,1.214751073156302
