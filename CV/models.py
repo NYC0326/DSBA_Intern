@@ -86,14 +86,6 @@ class ResNet50(nn.Module):
 
         return x
 
-import torch
-import torch.nn as nn
-import timm
-
-import torch
-import torch.nn as nn
-import timm
-
 class ViT_S16(nn.Module):
     def __init__(self, num_classes=10, pretrained=False):
         super(ViT_S16, self).__init__()
