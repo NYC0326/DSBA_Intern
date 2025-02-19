@@ -1,0 +1,2 @@
+Model,Pretrained,Augmentation,Accuracy (%),Loss
+ViT-S16,False,RandomErasing,20.41,2.2805979670807957
