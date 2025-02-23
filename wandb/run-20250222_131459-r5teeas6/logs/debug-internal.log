@@ -1,0 +1,15 @@
+{"time":"2025-02-22T13:15:00.201098408+09:00","level":"INFO","msg":"stream: starting","core version":"0.19.6","symlink path":"/workspace/wandb/run-20250222_131459-r5teeas6/logs/debug-core.log"}
+{"time":"2025-02-22T13:15:00.306427115+09:00","level":"INFO","msg":"created new stream","id":"r5teeas6"}
+{"time":"2025-02-22T13:15:00.306503114+09:00","level":"INFO","msg":"stream: started","id":"r5teeas6"}
+{"time":"2025-02-22T13:15:00.306539128+09:00","level":"INFO","msg":"writer: Do: started","stream_id":"r5teeas6"}
+{"time":"2025-02-22T13:15:00.306659297+09:00","level":"INFO","msg":"sender: started","stream_id":"r5teeas6"}
+{"time":"2025-02-22T13:15:00.306603882+09:00","level":"INFO","msg":"handler: started","stream_id":"r5teeas6"}
+{"time":"2025-02-22T13:15:00.723996372+09:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-02-22T13:43:48.687491895+09:00","level":"INFO","msg":"stream: closing","id":"r5teeas6"}
+{"time":"2025-02-22T13:43:48.687518385+09:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-02-22T13:43:48.687905347+09:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-02-22T13:43:49.487109027+09:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-02-22T13:43:49.876911127+09:00","level":"INFO","msg":"handler: closed","stream_id":"r5teeas6"}
+{"time":"2025-02-22T13:43:49.876933988+09:00","level":"INFO","msg":"writer: Close: closed","stream_id":"r5teeas6"}
+{"time":"2025-02-22T13:43:49.876961193+09:00","level":"INFO","msg":"sender: closed","stream_id":"r5teeas6"}
+{"time":"2025-02-22T13:43:49.877128912+09:00","level":"INFO","msg":"stream: closed","id":"r5teeas6"}

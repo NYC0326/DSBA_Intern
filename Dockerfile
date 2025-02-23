@@ -22,4 +22,4 @@ WORKDIR /workspace
 # pip, PyTorch + Hugging Face Transformers 설치
 RUN pip3 install --upgrade pip && \
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
-    pip3 install transformers datasets accelerate scipy numpy pandas tqdm matplotlib scikit-learn wandb OmegaConf
+    pip3 install transformers datasets accelerate scipy numpy pandas tqdm matplotlib scikit-learn wandb OmegaConf python-dotenv gpustat nvitop

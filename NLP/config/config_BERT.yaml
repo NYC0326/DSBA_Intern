@@ -9,6 +9,6 @@ data_config:
 
 train_config:
   epochs: 5
-  lr: 3e-5
-  optimizer: "adamw"
-  checkpoint_dir: "./checkpoints"
+  lr: 5e-5
+  optimizer: "adam"
+  checkpoint_dir: "./checkpoints/bert-base-uncased"

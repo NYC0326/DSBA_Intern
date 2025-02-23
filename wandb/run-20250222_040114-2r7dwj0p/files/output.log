@@ -1,0 +1,19 @@
+Train Epoch 1:   0%|                                                                                                                                                                                                   | 0/2500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/workspace/NLP/src/main.py", line 132, in <module>
+    main(configs)
+  File "/workspace/NLP/src/main.py", line 73, in main
+    loss, accuracy = train_iter(model, inputs, optimizer, device)
+  File "/workspace/NLP/src/main.py", line 25, in train_iter
+    outputs = model(**inputs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspace/NLP/src/model.py", line 26, in forward
+    outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+TypeError: ModernBertModel.forward() got an unexpected keyword argument 'token_type_ids'

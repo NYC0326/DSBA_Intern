@@ -1,10 +1,11 @@
-import omegaconf, os, sys
+import os
+import sys
+import omegaconf
 from omegaconf import OmegaConf
-
 
 def load_config() -> omegaconf.DictConfig:
     config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "config"))
-    config_name = sys.argv[1]
+    config_name = sys.argv[1] if len(sys.argv) > 1 else "config_BERT.yaml"
     config_path = os.path.join(config_dir, config_name)
 
     if not os.path.exists(config_path):

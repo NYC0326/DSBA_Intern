@@ -1,0 +1,42 @@
+{
+  "os":  "Linux-5.4.0-150-generic-x86_64-with-glibc2.35",
+  "python":  "CPython 3.10.12",
+  "startedAt":  "2025-02-19T16:02:30.564656Z",
+  "program":  "/workspace/exp_1/src/main.py",
+  "codePath":  "exp_1/src/main.py",
+  "git":  {
+    "remote":  "https://github.com/NYC0326/DSBA_Intern.git",
+    "commit":  "15f8623d3b9f067e453ac933defd0cae1ae669bc"
+  },
+  "email":  "namyc326@gmail.com",
+  "root":  "/workspace",
+  "host":  "624ef792a4f4",
+  "executable":  "/usr/bin/python",
+  "codePathLocal":  "exp_1/src/main.py",
+  "cpu_count":  4,
+  "cpu_count_logical":  8,
+  "gpu":  "NVIDIA GeForce RTX 2080 Ti",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "3936290357248",
+      "used":  "59179294720"
+    }
+  },
+  "memory":  {
+    "total":  "67340337152"
+  },
+  "cpu":  {
+    "count":  4,
+    "countLogical":  8
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 2080 Ti",
+      "memoryTotal":  "11811160064",
+      "cudaCores":  4352,
+      "architecture":  "Turing"
+    }
+  ],
+  "cudaVersion":  "12.0"
+}
