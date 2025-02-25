@@ -1,2 +1,0 @@
-Model,Pretrained,Augmentation,Accuracy (%),Loss
-ViT-S16,False,None,23.08,2.123956789985632

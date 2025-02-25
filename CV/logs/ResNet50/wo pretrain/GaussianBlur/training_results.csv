@@ -1,2 +1,0 @@
-Model,Pretrained,Augmentation,Accuracy (%),Loss
-ResNet50,False,GaussianBlur,64.84,1.6467296814385313
