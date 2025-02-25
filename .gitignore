@@ -1,0 +1,13 @@
+/CV/__pycache__
+/CV/data
+/CV/logs
+/CV/models/__pycache__
+/NLP/src/__pycache__
+/.env
+/checkpoints
+/NLP/exp_1/src/__pycache__
+/NLP/exp_1/exp_1.ipynb
+/NLP/exp_2/checkpoints
+/NLP/exp_2/src/__pycache__
+/NLP/exp_2/wandb
+/log

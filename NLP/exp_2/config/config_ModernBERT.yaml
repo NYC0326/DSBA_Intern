@@ -1,0 +1,18 @@
+model_config:
+  model_name: "answerdotai/ModernBERT-base"
+
+data_config:
+  model_name: "answerdotai/ModernBERT-base"
+  max_len: 128
+  valid_size: 0.1
+  batch_size:
+    train: 64
+    valid: 32   # for memory efficiency
+    test: 32
+
+train_config:
+  epochs: 5
+  lr: 5e-5
+  optimizer: "adam"
+  accumulation_steps: [1, 4, 16]
+  checkpoint_dir: "./checkpoints/modernbert"
